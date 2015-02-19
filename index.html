@@ -1,0 +1,92 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Cupid Can Haz Kittiez?</title>
+    <script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="game">
+<script type="text/javascript">
+
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create});
+
+function preload() {
+
+    game.load.tilemap('level1', 'assets/level1.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('tiles', 'assets/tiles.png');
+
+}
+var map;
+var layer;
+
+function create() {
+
+    game.stage.backgroundColor = '000000';
+
+    map = game.add.tilemap('level1');
+
+    map.addTilesetImage('blocks', 'tiles');
+
+    layer = map.createLayer('World1');
+
+    layer.resizeWorld();
+   /* //  We're going to be using physics, so enable the Arcade Physics system
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+
+    player = game.add.sprite(50, 140, 'cupid');
+    player.enableBody = true;
+
+  
+    game.physics.arcade.enable(player);
+
+
+    game.camera.follow(player);
+
+    cursors = game.input.keyboard.createCursorKeys();*/
+}
+/*
+function update() {
+
+    //  Reset the players velocity (movement)
+    player.body.velocity.x = 0;
+
+    if (cursors.left.isDown)
+    {
+        //  Move to the left
+        player.body.velocity.x = -200;
+
+        player.animations.play('left');
+    }
+    else if (cursors.right.isDown)
+    {
+        //  Move to the right
+        player.body.velocity.x = 200;
+
+        player.animations.play('right');
+    }
+    else
+    {
+        //  Stand still
+        player.animations.stop();
+
+        player.frame = 3;
+    }
+
+}
+
+function render(){
+    game.debug.cameraInfo(game.camera, 32, 32);
+    game.debug.spriteCoords(player, 32, 500);
+}
+
+</script>
+
+</body>
+</html>
