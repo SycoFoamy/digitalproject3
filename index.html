@@ -1,0 +1,361 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Level 1</title>
+    <script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="game"></div>
+<script type="text/javascript">
+
+var game = new Phaser.Game(800, 320, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update });
+
+function preload() {
+
+    game.load.image('background', 'assets/black.png');
+    game.load.image('brick', 'assets/redbrick.png');
+    game.load.image('key', 'assets/key.png');
+    game.load.image('ladder', 'assets/ladder.png');
+    game.load.image('door', 'assets/door.png');
+    game.load.spritesheet('player', 'assets/player.png', 15, 15);
+    game.load.spritesheet('enemy', 'assets/fireenemy.png', 13, 13);
+
+}
+
+var player;
+var bricks;
+var keys;
+var ladders;
+var doorOpen = false;
+var doors;
+var enemies;
+var enemy;
+var y = game.rnd.integerInRange(1,3);
+
+function create() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    game.add.tileSprite(0, 0, 800, 320, 'background');
+    game.world.setBounds(0,0,800,320);
+    
+    //Building the world
+    //Tried to tilemap with no success
+    bricks = game.add.group();
+    bricks.enableBody = true;
+    ladders = game.add.group();
+    ladders.enableBody = true;
+
+    for(var x=0;x<50;x++){
+        var brick = bricks.create((x*16),0,'brick');
+        brick.body.immovable = true;
+
+        brick = bricks.create((x*16),304,'brick');
+        brick.body.immovable = true;
+        if(x<10){
+            brick = bricks.create((x*16),80,'brick');
+            brick.body.immovable=true;
+        }
+        if(x<8){
+            if(x!=4){
+                brick = bricks.create((x*16),224,'brick');
+                brick.body.immovable=true;
+            }
+        }
+        if(x>8 && x<30){
+            brick = bricks.create((x*16),160,'brick');
+            brick.body.immovable=true;
+        }
+        if(x> 38){
+            brick = bricks.create((x*16),96,'brick');
+            brick.body.immovable=true;
+        }
+        if(x>42 && x<48){
+            brick = bricks.create((x*16),208,'brick');
+            brick.body.immovable=true;
+        }
+    }
+    for(var x=0;x<=18;x++){
+        var brick = bricks.create(0,(x*16),'brick');
+        brick.body.immovable=true;
+
+        brick = bricks.create(784,(x*16),'brick');
+        brick.body.immovable=true;
+        if(x>=10){
+            brick = bricks.create(128,(x*16),'brick');
+            brick.body.immovable=true;
+            if(x<=13){
+                brick = bricks.create(256,(x*16),'brick');
+                brick.body.immovable=true;
+                var ladder = ladders.create(112,(x*16),'ladder');
+            }
+            var ladder = ladders.create((30*16),(x*16),'ladder');
+        }
+        if(x>=14){
+            var ladder = ladders.create(64,(x*16),'ladder');
+        }
+        if(x>=13){
+            var ladder = ladders.create(224,(x*16),'ladder');
+            ladder = ladders.create((48*16),(x*16),'ladder');
+        }
+        brick = bricks.create(240,(13*16),'brick');
+        brick.body.immovable=true;
+        if(x>=6){
+            var ladder = ladders.create((38*16),(x*16),'ladder');
+        }
+        if(x>=5 && x<10){
+            var ladder = ladders.create(160,(x*16),'ladder');
+        }
+        if(x>6 && x<=13){
+            brick = bricks.create((16*42),(x*16),'brick');
+            brick.body.immovable=true;
+        }
+        if(x<5 && x>0){
+            var ladder = ladders.create(80,(x*16),'ladder');
+        }
+
+    }
+
+
+    //Creates the enemies
+
+    enemy = game.add.sprite(276,144,'enemy');
+    game.physics.arcade.enable(enemy);
+    enemy.body.gravity.y = 300;
+    sortieEnemy = game.add.tween(enemy);
+    
+    sortieEnemy.to({x: 144, y: 144}, 2000, Phaser.Easing.Linear.None);
+    sortieEnemy.onComplete.add(firstTween, this);
+    sortieEnemy.start();
+
+    enemy2 = game.add.sprite(50,64,'enemy');
+    game.physics.arcade.enable(enemy2);
+    enemy2.body.gravity.y = 300;
+    sortieEnemy2 = game.add.tween(enemy2);
+    
+    sortieEnemy2.to({x: 20, y: 64}, 2000, Phaser.Easing.Linear.None);
+    sortieEnemy2.onComplete.add(firstTween2, this);
+    sortieEnemy2.start();
+
+    enemy3 = game.add.sprite(500,288,'enemy');
+    game.physics.arcade.enable(enemy3);
+    enemy3.body.gravity.y = 300;
+    sortieEnemy3 = game.add.tween(enemy3);
+    
+    sortieEnemy3.to({x: 768, y: 288}, 2000, Phaser.Easing.Linear.None);
+    sortieEnemy3.onComplete.add(firstTween3, this);
+    sortieEnemy3.start();
+
+   //Makes the key object needed to progress, randomized to one of 3
+    keys = game.add.group();
+    keys.enableBody = true;
+    if(y==1){ 
+        var key = keys.create(240,(12*16),'key'); 
+    }
+    if(y==2) {
+        var key = keys.create(32,64,'key'); 
+    }
+    if(y==3) {
+        var key = keys.create((46*16),(12*16),'key'); 
+    }
+
+    //Makes the door needed to progress
+    doors = game.add.group();
+    doors.enableBody = true;
+    var door = doors.create((45*16),80,'door');
+    door.body.setSize(4,16,15,0);
+
+    //Creates and initializes the player
+    player = game.add.sprite(30, 290, 'player');
+    player.enableBody = true;
+
+    game.physics.arcade.enable(player);
+    player.body.gravity.y = 300;
+    player.body.collideWorldBounds = true;
+    player.body.setSize(10,16,2,0);
+
+    player.animations.add('left', [0,1,2], 10, true);
+    player.animations.add('right', [3,4,5], 10, true);
+
+    //Cursor commands
+    cursors = game.input.keyboard.createCursorKeys();
+}
+
+
+
+function update() {
+    game.physics.arcade.collide(player, bricks);
+    game.physics.arcade.collide(enemy, bricks);
+    game.physics.arcade.collide(enemy2, bricks);
+    game.physics.arcade.collide(enemy3, bricks);
+    game.physics.arcade.overlap(player, ladders, climb, null, this);
+    game.physics.arcade.overlap(player, keys, collectKey, null, this);
+    game.physics.arcade.overlap(player, doors, nextLevel, null, this);
+    game.physics.arcade.overlap(player, enemy, gameOver, null, this);
+    game.physics.arcade.overlap(player, enemy2, gameOver, null, this);
+    game.physics.arcade.overlap(player, enemy3, gameOver, null, this);
+    player.body.velocity.x = 0;
+
+
+    if (cursors.left.isDown)
+    {
+        //  Move to the left
+        player.body.velocity.x = -100;
+
+        player.animations.play('left');
+    }
+    else if (cursors.right.isDown)
+    {
+        //  Move to the right
+        player.body.velocity.x = 100;
+
+        player.animations.play('right');
+    }
+    else
+    {
+        //  Stand still
+        player.animations.stop();
+
+        player.frame = 3;
+    }
+
+}
+
+// functions to have the enemies patrol back and forth
+function firstTween() {
+
+    s = game.add.tween(enemy);
+    s.to({x: 488, y: 144}, game.rnd.integerInRange(4000,6000), Phaser.Easing.Linear.None);
+    s.onComplete.add(secondTween, this);
+    s.start();
+}
+
+function secondTween() {
+    s = game.add.tween(enemy);
+    s.to({x: 144, y: 144}, game.rnd.integerInRange(4000,6000), Phaser.Easing.Linear.None);
+    s.onComplete.add(firstTween, this);
+    s.start();
+}
+
+function firstTween2() {
+
+    s2 = game.add.tween(enemy2);
+    s2.to({x: 140, y: 64}, game.rnd.integerInRange(2000,4000), Phaser.Easing.Linear.None);
+    s2.onComplete.add(secondTween2, this);
+    s2.start();
+}
+
+function secondTween2() {
+    s2 = game.add.tween(enemy2);
+    s2.to({x: 20, y: 64}, game.rnd.integerInRange(2000,4000), Phaser.Easing.Linear.None);
+    s2.onComplete.add(firstTween2, this);
+    s2.start();
+}
+
+function firstTween3() {
+
+    s3 = game.add.tween(enemy3);
+    s3.to({x: 144, y: 288}, game.rnd.integerInRange(4000,6000), Phaser.Easing.Linear.None);
+    s3.onComplete.add(secondTween3, this);
+    s3.start();
+}
+
+function secondTween3() {
+    s3 = game.add.tween(enemy3);
+    s3.to({x: 768, y: 288}, game.rnd.integerInRange(4000,6000), Phaser.Easing.Linear.None);
+    s3.onComplete.add(firstTween3, this);
+    s3.start();
+}
+
+function climb(){
+    if(cursors.up.isDown){
+        player.body.velocity.y = -100;
+    }
+}
+
+function collectKey(player, key){
+    key.kill();
+    doorOpen = true;
+   
+}
+
+function nextLevel(player, door){
+    if(doorOpen == true){
+        game.add.text(350, 128, 'YOU WIN!', { fontSize: '32px', fill: '#FFF' });
+    }
+    enemy.kill();
+    enemy2.kill();
+    enemy3.kill();
+}
+
+function gameOver(player, enemy){
+    player.kill();
+    game.add.text(15, 128, 'YOU HAVE LOST ALL YOUR ORGANS IN A FIERY DEATH!', { fontSize: '32px', fill: '#FFF' });
+}
+</script>
+<div id="readme">
+<h2>LEVEL 1</h2>
+<ul>
+
+<li><strong>High Concept:</strong>
+You find yourself in a dungeon with fiery minions, patrolling the dungeon waiting to de-organ you and feast on your entrails.
+</li>
+
+<li><strong>Player Experience Goals:</strong>
+Instead of having the capabilities of simply jumping over the flames, the player must use the ladders as a way of getting around the flames.
+</li>
+
+<li><strong>Genre:</strong>
+Simple arcade style game.
+</li>
+
+<li><strong>Game play:</strong>
+The game uses the LEFT, RIGHT and UP arrows. LEFT and RIGHT move their respective directions, however, the up button is only used to go up ladders, it cannot be used to jump. To get through the door at the top right-hand corner, you must retrieve the key or you will not be able to enter the door.
+</li>
+
+<li><strong>Prototype goal:</strong>
+Tried to use tilemapping for thie project but could not get the player to collide with my tiles, so I manually entered each tile for the game.
+</li>
+
+<li><strong>Features:</strong>
+The key can spawn in one of three places, randomized by a random number generator. The flames also have varying speeds determined by a random integer, so sometimes, it is nearly impossible to retrieve the key.
+</li>
+
+<li><strong>Setting/Premise:</strong>
+See High Concept.
+</li>
+
+<li><strong>Story:</strong>
+N/A
+</li>
+
+<li><strong>Target Audience:</strong>
+Those that wish to play a simple platformer.
+</li>
+
+<li><strong>Play time:</strong>
+A solution to the problem, be it victory or death, should occur in no more than 5 minutes.
+</li>
+
+<li><strong>Strategies:</strong>
+Figuring out if you have enough time to run to the next ladder to escape the flames' pursuit.
+</li>
+
+<li><strong>Prototype Assets:</strong>
+I used a tileset I found online and put all of the animations and tiles into my program. The tileset was from an open source.
+</li>
+
+<li><strong>Prototype Closest Other Game:</strong>
+Donkey Kong.
+</li>
+
+</ul>
+</div>
+
+</body>
+</html>
